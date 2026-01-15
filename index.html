@@ -30,7 +30,7 @@
       font-weight:600;
     }
 
-    /* Boutons (base commune) */
+    /* Boutons */
     .btn{
       display:flex;
       align-items:center;
@@ -57,9 +57,9 @@
 
     .btn-linkedin{ background:#0A66C2; color:#fff; }
     .btn-mail{ background:#9b1c2f; color:#fff; }
-    .btn-wheel{ background:#ff7a00; color:#111; }
+    .btn-game{ background:#ff7a00; color:#111; }
 
-    /* IMPORTANT : neutraliser le style natif des <button> pour qu’il soit identique aux <a> */
+    /* Neutraliser le style natif du <button> */
     button.btn{
       appearance:none;
       -webkit-appearance:none;
@@ -68,7 +68,7 @@
       font-family: inherit;
     }
 
-    /* Séparation (barre haute uniquement) */
+    /* Séparation */
     .separator{
       margin:26px 0 26px;
       display:flex;
@@ -102,43 +102,91 @@
       padding:24px;
     }
 
-    .wheel-box{
+    .box{
       width:min(420px,100%);
       text-align:center;
       color:#fff;
     }
 
-    .wheel-title{
+    .game-title{
       font-weight:600;
       font-size:16px;
       margin:0 0 14px;
     }
 
-    .wheel-wrap{
+    /* Pièce */
+    .coin-stage{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding:8px 0 2px;
+    }
+
+    .coin{
+      width:140px;
+      height:140px;
       position:relative;
-      width:260px;
-      height:260px;
-      margin:0 auto;
+      transform-style:preserve-3d;
+      cursor:pointer;
+      -webkit-tap-highlight-color: transparent;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,.55));
     }
 
-    /* Curseur vertical */
-    .pointer{
+    .coin-face{
       position:absolute;
-      top:-10px;
-      left:50%;
-      transform:translateX(-50%);
-      width:3px;
-      height:18px;
-      background:#ffffff;
-      border-radius:2px;
-      box-shadow:0 2px 6px rgba(0,0,0,.6);
-      z-index:3;
+      inset:0;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      backface-visibility:hidden;
+      border:3px solid rgba(255,255,255,.35);
+      box-sizing:border-box;
     }
 
-    canvas{
-      width:260px;
-      height:260px;
-      display:block;
+    .front{
+      background: radial-gradient(circle at 30% 30%, #f6d27a, #caa24b 60%, #8a6b26 100%);
+    }
+
+    .back{
+      background: radial-gradient(circle at 30% 30%, #d0d6db, #8e9aa3 60%, #515b63 100%);
+      transform: rotateY(180deg);
+    }
+
+    .coin-mark{
+      font-weight:800;
+      font-size:22px;
+      letter-spacing:.6px;
+      color:rgba(0,0,0,.75);
+      text-transform:uppercase;
+    }
+
+    .back .coin-mark{
+      color:rgba(255,255,255,.9);
+    }
+
+    /* Animation flip */
+    .spinning{
+      animation: flip 1.2s linear infinite;
+    }
+
+    @keyframes flip{
+      0%   { transform: rotateY(0deg) rotateX(0deg); }
+      100% { transform: rotateY(1440deg) rotateX(360deg); }
+    }
+
+    .result{
+      margin-top:14px;
+      font-size:18px;
+      font-weight:800;
+      opacity:0;
+      transform: translateY(6px);
+      transition: opacity .18s ease, transform .18s ease;
+    }
+
+    .result.show{
+      opacity:1;
+      transform: translateY(0);
     }
 
     .hint{
@@ -169,110 +217,91 @@
       <div class="separator-icon">🍺</div>
     </div>
 
-    <!-- Bouton roue : vrai button, identique visuellement -->
-    <button class="btn btn-wheel" id="openWheel" type="button">
-      Roue
+    <button class="btn btn-game" id="openGame" type="button">
+      Jeu
     </button>
   </div>
 
   <div class="overlay" id="overlay">
-    <div class="wheel-box">
-      <div class="wheel-title">Choisis une couleur et tourne la roue</div>
+    <div class="box">
+      <div class="game-title">Lance la pièce</div>
 
-      <div class="wheel-wrap">
-        <div class="pointer"></div>
-        <canvas id="wheel" width="260" height="260"></canvas>
+      <div class="coin-stage">
+        <div class="coin" id="coin" role="button" aria-label="Lancer la pièce">
+          <div class="coin-face front">
+            <div class="coin-mark">pile</div>
+          </div>
+          <div class="coin-face back">
+            <div class="coin-mark">face</div>
+          </div>
+        </div>
       </div>
 
-      <div class="hint">Touchez la roue pour lancer • Touchez en dehors pour fermer</div>
+      <div class="result" id="result">Tu bois</div>
+
+      <div class="hint">Touchez la pièce pour lancer • Touchez en dehors pour fermer</div>
     </div>
   </div>
 
   <script>
     const overlay = document.getElementById("overlay");
-    const openWheel = document.getElementById("openWheel");
-    const canvas = document.getElementById("wheel");
-    const ctx = canvas.getContext("2d");
+    const openGame = document.getElementById("openGame");
+    const coin = document.getElementById("coin");
+    const result = document.getElementById("result");
 
-    let angle = 0;
     let spinning = false;
-
-    const colorA = "#0A66C2";
-    const colorB = "#9b1c2f";
-
-    function drawWheel(){
-      const r = canvas.width / 2;
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-
-      ctx.save();
-      ctx.translate(r,r);
-      ctx.rotate(angle);
-
-      ctx.beginPath();
-      ctx.moveTo(0,0);
-      ctx.arc(0,0,r-2,0,Math.PI);
-      ctx.fillStyle = colorA;
-      ctx.fill();
-
-      ctx.beginPath();
-      ctx.moveTo(0,0);
-      ctx.arc(0,0,r-2,Math.PI,Math.PI*2);
-      ctx.fillStyle = colorB;
-      ctx.fill();
-
-      ctx.beginPath();
-      ctx.arc(0,0,r-2,0,Math.PI*2);
-      ctx.strokeStyle = "rgba(255,255,255,.6)";
-      ctx.lineWidth = 4;
-      ctx.stroke();
-
-      ctx.restore();
-    }
 
     function openModal(){
       overlay.style.display = "flex";
-      drawWheel();
+      result.classList.remove("show");
     }
 
     function closeModal(){
       overlay.style.display = "none";
+      coin.classList.remove("spinning");
+      spinning = false;
+      result.classList.remove("show");
+      // reset orientation
+      coin.style.transform = "";
     }
 
-    openWheel.addEventListener("click", (e) => {
+    openGame.addEventListener("click", (e) => {
       e.preventDefault();
       openModal();
     });
 
     overlay.addEventListener("click", closeModal);
 
-    canvas.addEventListener("click", (e) => {
+    coin.addEventListener("click", (e) => {
       e.stopPropagation();
-      if(spinning) return;
+      if (spinning) return;
 
       spinning = true;
-      const spins = Math.random() * 6 + 4;
-      const target = spins * 2 * Math.PI + Math.random() * 2 * Math.PI;
-      const start = angle;
-      const duration = 2200;
-      const startTime = performance.now();
+      result.classList.remove("show");
 
-      function animate(t){
-        const p = Math.min((t - startTime) / duration, 1);
-        const ease = 1 - Math.pow(1 - p, 3);
-        angle = start + target * ease;
-        drawWheel();
+      // Animation infinie pendant le "vol"
+      coin.classList.add("spinning");
 
-        if(p < 1){
-          requestAnimationFrame(animate);
-        } else {
-          spinning = false;
-        }
-      }
+      // 50/50 : pile ou face
+      const isHeads = Math.random() < 0.5;
 
-      requestAnimationFrame(animate);
+      // Durée aléatoire (pour faire "vrai")
+      const duration = Math.floor(1200 + Math.random() * 900);
+
+      setTimeout(() => {
+        // Stop animation
+        coin.classList.remove("spinning");
+
+        // Fixe l'orientation finale (pile = 0deg, face = 180deg)
+        coin.style.transform = isHeads ? "rotateY(0deg)" : "rotateY(180deg)";
+
+        // Affiche le résultat demandé
+        result.textContent = "Tu bois";
+        result.classList.add("show");
+
+        spinning = false;
+      }, duration);
     });
-
-    drawWheel();
   </script>
 </body>
 </html>
