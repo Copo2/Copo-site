@@ -23,10 +23,21 @@
       text-align:center;
     }
 
+    /* Titre principal */
     h1{
       color:#fff;
       font-size:20px;
       margin:0 0 18px;
+      font-weight:600;
+    }
+
+    /* Séparateur bière */
+    .separator{
+      color:#ffffff;
+      font-size:20px;
+      font-weight:600;
+      margin:18px 0 18px;
+      opacity:.95;
     }
 
     /* Boutons */
@@ -92,7 +103,7 @@
       margin:0 auto;
     }
 
-    /* Curseur : TRAIT VERTICAL */
+    /* Curseur vertical */
     .pointer{
       position:absolute;
       top:-10px;
@@ -124,6 +135,7 @@
   <div class="container">
     <h1>Me contacter</h1>
 
+    <!-- Groupe contact -->
     <a class="btn btn-linkedin"
        href="https://www.linkedin.com/in/nils-van-caeneghem-347257198/"
        target="_blank" rel="noopener">
@@ -135,12 +147,17 @@
       Email
     </a>
 
+    <!-- Séparateur bière -->
+    <div class="separator">🍺</div>
+
+    <!-- Bouton roue -->
     <a class="btn btn-wheel" id="openWheel" href="#">
       <span class="icon">🍺</span>
       <span>Roue</span>
     </a>
   </div>
 
+  <!-- Modale roue -->
   <div class="overlay" id="overlay">
     <div class="wheel-box">
       <div class="wheel-title">Choisis une couleur et tourne la roue</div>
