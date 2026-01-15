@@ -29,7 +29,6 @@
       margin:0 0 18px;
     }
 
-    /* 3 boutons strictement identiques */
     .btn{
       display:flex;
       align-items:center;
@@ -61,7 +60,6 @@
 
     .icon{ font-size:18px; line-height:1; }
 
-    /* Modale */
     .overlay{
       position:fixed;
       inset:0;
@@ -93,19 +91,32 @@
       margin:0 auto;
     }
 
-    /* Curseur */
+    /* Curseur plus précis : la pointe touche la roue + petit point */
     .pointer{
       position:absolute;
-      top:-10px;
+      top:-2px; /* descend le triangle */
       left:50%;
       transform:translateX(-50%);
       width:0;
       height:0;
       border-left:12px solid transparent;
       border-right:12px solid transparent;
-      border-bottom:20px solid #ffffff;
+      border-bottom:18px solid #ffffff;
       filter: drop-shadow(0 4px 10px rgba(0,0,0,.45));
-      z-index:2;
+      z-index:3;
+    }
+
+    .pointer-dot{
+      position:absolute;
+      top:14px; /* place le point au niveau de la pointe */
+      left:50%;
+      transform:translateX(-50%);
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:#ffffff;
+      box-shadow:0 4px 10px rgba(0,0,0,.45);
+      z-index:4;
     }
 
     canvas{
@@ -137,7 +148,6 @@
       Email
     </a>
 
-    <!-- 3e bouton (même taille, même balise) -->
     <a class="btn btn-wheel" id="openWheel" href="#">
       <span class="icon">🍺</span>
       <span>Roue</span>
@@ -150,6 +160,7 @@
 
       <div class="wheel-wrap">
         <div class="pointer" aria-hidden="true"></div>
+        <div class="pointer-dot" aria-hidden="true"></div>
         <canvas id="wheel" width="260" height="260"></canvas>
       </div>
 
@@ -165,9 +176,39 @@
 
     let angle = 0;
     let spinning = false;
+    let selected = null; // 0 = moitié A, 1 = moitié B
 
     const colorA = "#0A66C2"; // bleu
     const colorB = "#9b1c2f"; // bordeaux
+
+    function normalize(a){
+      const twoPi = Math.PI * 2;
+      return ((a % twoPi) + twoPi) % twoPi;
+    }
+
+    // Détermine quelle moitié est sous le curseur (en haut, direction -PI/2)
+    function pickSelected(){
+      const pointerAngleWorld = -Math.PI / 2; // haut
+      const pointerAngleInWheel = normalize(pointerAngleWorld - angle);
+      // Wheel local: [0..PI) = moitié A, [PI..2PI) = moitié B
+      return (pointerAngleInWheel < Math.PI) ? 0 : 1;
+    }
+
+    function drawHalf(start, end, fill, isSelected){
+      const r = canvas.width / 2;
+      const baseR = r - 2;
+      const boost = isSelected ? 10 : 0;      // "grossit" la partie gagnante
+      const alpha = isSelected ? 1.0 : 0.92;  // léger contraste
+
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.arc(0, 0, baseR + boost, start, end);
+      ctx.closePath();
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = fill;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
 
     function drawWheel() {
       const r = canvas.width / 2;
@@ -177,21 +218,16 @@
       ctx.translate(r, r);
       ctx.rotate(angle);
 
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.arc(0, 0, r, 0, Math.PI);
-      ctx.fillStyle = colorA;
-      ctx.fill();
+      // moitié A (0..PI)
+      drawHalf(0, Math.PI, colorA, selected === 0);
 
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.arc(0, 0, r, Math.PI, Math.PI * 2);
-      ctx.fillStyle = colorB;
-      ctx.fill();
+      // moitié B (PI..2PI)
+      drawHalf(Math.PI, Math.PI * 2, colorB, selected === 1);
 
+      // cercle extérieur (par-dessus)
       ctx.beginPath();
       ctx.arc(0, 0, r - 2, 0, Math.PI * 2);
-      ctx.strokeStyle = "rgba(255,255,255,.55)";
+      ctx.strokeStyle = "rgba(255,255,255,.65)";
       ctx.lineWidth = 4;
       ctx.stroke();
 
@@ -201,6 +237,7 @@
     function openModal() {
       overlay.style.display = "flex";
       overlay.setAttribute("aria-hidden", "false");
+      selected = null;
       drawWheel();
     }
 
@@ -210,7 +247,7 @@
     }
 
     openWheel.addEventListener("click", (e) => {
-      e.preventDefault();   // empêche le saut en haut de page
+      e.preventDefault();
       openModal();
     });
 
@@ -219,10 +256,14 @@
     canvas.addEventListener("click", (e) => {
       e.stopPropagation();
       if (spinning) return;
-      spinning = true;
 
-      const spins = Math.random() * 6 + 4;  // 4 à 10 tours
-      const target = spins * 2 * Math.PI;
+      spinning = true;
+      selected = null;
+
+      const spins = Math.random() * 6 + 4;     // 4 à 10 tours
+      const extra = Math.random() * 2 * Math.PI; // arrêt aléatoire
+      const target = spins * 2 * Math.PI + extra;
+
       const start = angle;
       const duration = 2200;
       const startTime = performance.now();
@@ -231,10 +272,17 @@
         const progress = Math.min((t - startTime) / duration, 1);
         const ease = 1 - Math.pow(1 - progress, 3);
         angle = start + target * ease;
+
         drawWheel();
 
-        if (progress < 1) requestAnimationFrame(animate);
-        else spinning = false;
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          // Détermine la couleur sous le curseur et la met en avant
+          selected = pickSelected();
+          drawWheel();
+          spinning = false;
+        }
       }
 
       requestAnimationFrame(animate);
