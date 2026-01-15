@@ -91,33 +91,21 @@
       margin:0 auto;
     }
 
-    /* Curseur plus précis : la pointe touche la roue + petit point */
-    .pointer{
-      position:absolute;
-      top:-2px; /* descend le triangle */
-      left:50%;
-      transform:translateX(-50%);
-      width:0;
-      height:0;
-      border-left:12px solid transparent;
-      border-right:12px solid transparent;
-      border-bottom:18px solid #ffffff;
-      filter: drop-shadow(0 4px 10px rgba(0,0,0,.45));
-      z-index:3;
-    }
 
-    .pointer-dot{
-      position:absolute;
-      top:14px; /* place le point au niveau de la pointe */
-      left:50%;
-      transform:translateX(-50%);
-      width:8px;
-      height:8px;
-      border-radius:50%;
-      background:#ffffff;
-      box-shadow:0 4px 10px rgba(0,0,0,.45);
-      z-index:4;
-    }
+   /* Curseur minimal : petit trait précis */
+.pointer{
+  position:absolute;
+  top:-6px;
+  left:50%;
+  transform:translateX(-50%);
+  width:24px;
+  height:3px;
+  background:#ffffff;
+  border-radius:2px;
+  box-shadow:0 2px 6px rgba(0,0,0,.5);
+  z-index:3;
+}
+
 
     canvas{
       width:260px;
