@@ -29,13 +29,14 @@
       margin:0 0 18px;
     }
 
-    /* 3 boutons identiques */
+    /* 3 boutons strictement identiques */
     .btn{
       display:flex;
       align-items:center;
       justify-content:center;
       gap:10px;
       width:100%;
+      box-sizing:border-box;
       padding:14px;
       margin:0 0 14px;
       font-size:16px;
@@ -44,9 +45,9 @@
       border-radius:12px;
       box-shadow:0 6px 16px rgba(0,0,0,.35);
       transition:transform .1s ease, box-shadow .1s ease;
-      border:0;
       cursor:pointer;
       -webkit-tap-highlight-color: transparent;
+      user-select:none;
     }
 
     .btn:active{
@@ -56,16 +57,9 @@
 
     .btn-linkedin{ background:#0A66C2; color:#fff; }
     .btn-mail{ background:#9b1c2f; color:#fff; }
+    .btn-wheel{ background:#ff7a00; color:#111; }
 
-    .btn-wheel{
-      background:#ff7a00;
-      color:#111;
-    }
-
-    .icon{
-      font-size:18px;
-      line-height:1;
-    }
+    .icon{ font-size:18px; line-height:1; }
 
     /* Modale */
     .overlay{
@@ -99,7 +93,7 @@
       margin:0 auto;
     }
 
-    /* Curseur/pointeur */
+    /* Curseur */
     .pointer{
       position:absolute;
       top:-10px;
@@ -117,6 +111,7 @@
     canvas{
       width:260px;
       height:260px;
+      display:block;
     }
 
     .hint{
@@ -142,10 +137,11 @@
       Email
     </a>
 
-    <button class="btn btn-wheel" id="openWheel" type="button">
+    <!-- 3e bouton (même taille, même balise) -->
+    <a class="btn btn-wheel" id="openWheel" href="#">
       <span class="icon">🍺</span>
       <span>Roue</span>
-    </button>
+    </a>
   </div>
 
   <div class="overlay" id="overlay" aria-hidden="true">
@@ -170,34 +166,29 @@
     let angle = 0;
     let spinning = false;
 
-    // 2 couleurs 50/50
     const colorA = "#0A66C2"; // bleu
     const colorB = "#9b1c2f"; // bordeaux
 
     function drawWheel() {
       const r = canvas.width / 2;
-
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       ctx.save();
       ctx.translate(r, r);
       ctx.rotate(angle);
 
-      // moitié A
       ctx.beginPath();
       ctx.moveTo(0, 0);
       ctx.arc(0, 0, r, 0, Math.PI);
       ctx.fillStyle = colorA;
       ctx.fill();
 
-      // moitié B
       ctx.beginPath();
       ctx.moveTo(0, 0);
       ctx.arc(0, 0, r, Math.PI, Math.PI * 2);
       ctx.fillStyle = colorB;
       ctx.fill();
 
-      // cercle extérieur
       ctx.beginPath();
       ctx.arc(0, 0, r - 2, 0, Math.PI * 2);
       ctx.strokeStyle = "rgba(255,255,255,.55)";
@@ -218,6 +209,38 @@
       overlay.setAttribute("aria-hidden", "true");
     }
 
-    openWheel.addEventListener("click", ope
-::contentReference[oaicite:0]{index=0}
+    openWheel.addEventListener("click", (e) => {
+      e.preventDefault();   // empêche le saut en haut de page
+      openModal();
+    });
 
+    overlay.addEventListener("click", closeModal);
+
+    canvas.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (spinning) return;
+      spinning = true;
+
+      const spins = Math.random() * 6 + 4;  // 4 à 10 tours
+      const target = spins * 2 * Math.PI;
+      const start = angle;
+      const duration = 2200;
+      const startTime = performance.now();
+
+      function animate(t) {
+        const progress = Math.min((t - startTime) / duration, 1);
+        const ease = 1 - Math.pow(1 - progress, 3);
+        angle = start + target * ease;
+        drawWheel();
+
+        if (progress < 1) requestAnimationFrame(animate);
+        else spinning = false;
+      }
+
+      requestAnimationFrame(animate);
+    });
+
+    drawWheel();
+  </script>
+</body>
+</html>
