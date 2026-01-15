@@ -60,7 +60,7 @@
     .btn-mail{ background:#9b1c2f; color:#fff; }
     .btn-wheel{ background:#ff7a00; color:#111; }
 
-    /* Séparation marquée */
+    /* Séparation (barre haute uniquement) */
     .separator{
       margin:26px 0 26px;
       display:flex;
@@ -157,14 +157,13 @@
       Email
     </a>
 
-    <!-- Séparateur renforcé -->
+    <!-- Séparateur allégé -->
     <div class="separator">
       <div class="separator-line"></div>
       <div class="separator-icon">🍺</div>
-      <div class="separator-line"></div>
     </div>
 
-    <!-- Bouton roue (sans emoji) -->
+    <!-- Bouton roue -->
     <a class="btn btn-wheel" id="openWheel" href="#">
       Roue
     </a>
@@ -239,36 +238,4 @@
       openModal();
     });
 
-    overlay.addEventListener("click", closeModal);
-
-    canvas.addEventListener("click", e => {
-      e.stopPropagation();
-      if(spinning) return;
-
-      spinning = true;
-      const spins = Math.random() * 6 + 4;
-      const target = spins * 2 * Math.PI + Math.random() * 2 * Math.PI;
-      const start = angle;
-      const duration = 2200;
-      const startTime = performance.now();
-
-      function animate(t){
-        const p = Math.min((t - startTime) / duration, 1);
-        const ease = 1 - Math.pow(1 - p, 3);
-        angle = start + target * ease;
-        drawWheel();
-
-        if(p < 1){
-          requestAnimationFrame(animate);
-        } else {
-          spinning = false;
-        }
-      }
-
-      requestAnimationFrame(animate);
-    });
-
-    drawWheel();
-  </script>
-</body>
-</html>
+    overlay.addEv
