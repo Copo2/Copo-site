@@ -23,21 +23,12 @@
       text-align:center;
     }
 
-    /* Titre principal */
+    /* Titre */
     h1{
       color:#fff;
       font-size:20px;
-      margin:0 0 18px;
+      margin:0 0 20px;
       font-weight:600;
-    }
-
-    /* Séparateur bière */
-    .separator{
-      color:#ffffff;
-      font-size:20px;
-      font-weight:600;
-      margin:18px 0 18px;
-      opacity:.95;
     }
 
     /* Boutons */
@@ -45,7 +36,6 @@
       display:flex;
       align-items:center;
       justify-content:center;
-      gap:10px;
       width:100%;
       padding:14px;
       margin:0 0 14px;
@@ -70,7 +60,27 @@
     .btn-mail{ background:#9b1c2f; color:#fff; }
     .btn-wheel{ background:#ff7a00; color:#111; }
 
-    .icon{ font-size:18px; }
+    /* Séparation marquée */
+    .separator{
+      margin:26px 0 26px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:12px;
+    }
+
+    .separator-line{
+      width:60%;
+      height:1px;
+      background:rgba(255,255,255,.25);
+    }
+
+    .separator-icon{
+      font-size:20px;
+      color:#ffffff;
+      opacity:.95;
+      font-weight:600;
+    }
 
     /* Modale */
     .overlay{
@@ -135,7 +145,7 @@
   <div class="container">
     <h1>Me contacter</h1>
 
-    <!-- Groupe contact -->
+    <!-- Boutons contact -->
     <a class="btn btn-linkedin"
        href="https://www.linkedin.com/in/nils-van-caeneghem-347257198/"
        target="_blank" rel="noopener">
@@ -147,13 +157,16 @@
       Email
     </a>
 
-    <!-- Séparateur bière -->
-    <div class="separator">🍺</div>
+    <!-- Séparateur renforcé -->
+    <div class="separator">
+      <div class="separator-line"></div>
+      <div class="separator-icon">🍺</div>
+      <div class="separator-line"></div>
+    </div>
 
-    <!-- Bouton roue -->
+    <!-- Bouton roue (sans emoji) -->
     <a class="btn btn-wheel" id="openWheel" href="#">
-      <span class="icon">🍺</span>
-      <span>Roue</span>
+      Roue
     </a>
   </div>
 
