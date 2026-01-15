@@ -23,7 +23,6 @@
       text-align:center;
     }
 
-    /* Titre */
     h1{
       color:#fff;
       font-size:20px;
@@ -31,7 +30,7 @@
       font-weight:600;
     }
 
-    /* Boutons */
+    /* Boutons (base commune) */
     .btn{
       display:flex;
       align-items:center;
@@ -59,6 +58,15 @@
     .btn-linkedin{ background:#0A66C2; color:#fff; }
     .btn-mail{ background:#9b1c2f; color:#fff; }
     .btn-wheel{ background:#ff7a00; color:#111; }
+
+    /* IMPORTANT : neutraliser le style natif des <button> pour qu’il soit identique aux <a> */
+    button.btn{
+      appearance:none;
+      -webkit-appearance:none;
+      border:0;
+      outline:0;
+      font-family: inherit;
+    }
 
     /* Séparation (barre haute uniquement) */
     .separator{
@@ -145,7 +153,6 @@
   <div class="container">
     <h1>Me contacter</h1>
 
-    <!-- Boutons contact -->
     <a class="btn btn-linkedin"
        href="https://www.linkedin.com/in/nils-van-caeneghem-347257198/"
        target="_blank" rel="noopener">
@@ -157,19 +164,17 @@
       Email
     </a>
 
-    <!-- Séparateur allégé -->
     <div class="separator">
       <div class="separator-line"></div>
       <div class="separator-icon">🍺</div>
     </div>
 
-    <!-- Bouton roue -->
-    <a class="btn btn-wheel" id="openWheel" href="#">
+    <!-- Bouton roue : vrai button, identique visuellement -->
+    <button class="btn btn-wheel" id="openWheel" type="button">
       Roue
-    </a>
+    </button>
   </div>
 
-  <!-- Modale roue -->
   <div class="overlay" id="overlay">
     <div class="wheel-box">
       <div class="wheel-title">Choisis une couleur et tourne la roue</div>
@@ -233,9 +238,41 @@
       overlay.style.display = "none";
     }
 
-    openWheel.addEventListener("click", e => {
+    openWheel.addEventListener("click", (e) => {
       e.preventDefault();
       openModal();
     });
 
-    overlay.addEv
+    overlay.addEventListener("click", closeModal);
+
+    canvas.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if(spinning) return;
+
+      spinning = true;
+      const spins = Math.random() * 6 + 4;
+      const target = spins * 2 * Math.PI + Math.random() * 2 * Math.PI;
+      const start = angle;
+      const duration = 2200;
+      const startTime = performance.now();
+
+      function animate(t){
+        const p = Math.min((t - startTime) / duration, 1);
+        const ease = 1 - Math.pow(1 - p, 3);
+        angle = start + target * ease;
+        drawWheel();
+
+        if(p < 1){
+          requestAnimationFrame(animate);
+        } else {
+          spinning = false;
+        }
+      }
+
+      requestAnimationFrame(animate);
+    });
+
+    drawWheel();
+  </script>
+</body>
+</html>
